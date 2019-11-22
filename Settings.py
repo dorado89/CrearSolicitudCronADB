@@ -1,6 +1,5 @@
 import os
 
-MEDIA_DIR = '/home/ec2-user/apps/Cron/'
 ANDROID_HOME = os.environ.get('ANDROID_HOME')
 AWS_ACCESS_KEY_ID_SQS = os.environ.get('AWS_ACCESS_KEY_ID_SQS')
 AWS_SECRET_ACCESS_KEY_SQS = os.environ.get('AWS_SECRET_ACCESS_KEY_SQS')
