@@ -4,18 +4,18 @@ import Settings
 import json
 import subprocess
 from SQSConnection import SQSConnection
-from threading import Thread
 
 
 def execute_test(script,urlapk):
     txt = script
-    subprocess.run([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-avd', 'Pixel_2_API_28'])
-    subprocess.run(['wget',urlapk])
-    sleep(60)
+    subprocess.Popen([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-avd', 'Pixel_2_API_28'])
+    subprocess.run(['wget','-N',urlapk])
+    sleep(500)
     subprocess.run([format(Settings.ANDROID_HOME) + "/platform-tools/adb", 'install',urlapk.rsplit('/',1)[-1]])
     output = subprocess.call([format(Settings.ANDROID_HOME) + "/platform-tools/adb",'shell','monkey',txt])
     subprocess.run([format(Settings.ANDROID_HOME) + "/platform-tools/adb", 'shell', 'reboot','-p'])
-    subprocess.run([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-wipe-data', 'Pixel_2_API_28'])
+    sleep(500)
+    subprocess.run([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-avd', 'Pixel_2_API_28','-wipe-data'])
     if output < 0:
         print('error en ejecución de prueba')
 
