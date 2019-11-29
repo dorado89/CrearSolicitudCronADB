@@ -7,12 +7,15 @@ from SQSConnection import SQSConnection
 from threading import Thread
 
 
-def execute_test(script):
+def execute_test(script,urlapk):
     txt = script
-    output = subprocess.call([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-avd', 'Pixel_2_API_28'])
-    output = subprocess.call([format(Settings.ANDROID_HOME) + "/platform-tools/adb", 'install', './Calendula-ciDebug-2.5.11.apk'])
+    subprocess.run([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-avd', 'Pixel_2_API_28'])
+    subprocess.run(['wget',urlapk])
+    sleep(60)
+    subprocess.run([format(Settings.ANDROID_HOME) + "/platform-tools/adb", 'install',urlapk.rsplit('/',1)[-1]])
     output = subprocess.call([format(Settings.ANDROID_HOME) + "/platform-tools/adb",'shell','monkey',txt])
-    output = subprocess.call([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-wipe-data', 'Pixel_2_API_28'])
+    subprocess.run([format(Settings.ANDROID_HOME) + "/platform-tools/adb", 'shell', 'reboot','-p'])
+    subprocess.run([format(Settings.ANDROID_HOME) + "/emulator/emulator", '-wipe-data', 'Pixel_2_API_28'])
     if output < 0:
         print('error en ejecución de prueba')
 
@@ -26,9 +29,14 @@ def process():
                 message_body = sqs_connection.message.get('Body')
                 msg = json.loads(message_body)
                 #Aqui va la conversion del json
-                script = msg['descripcion']
-                sqs_connection.delete()
-                execute_test(script)
+                listapruebas = msg[0]["fields"]["pruebas"]
+                script=""
+                urlapk=""
+                for prueba in listapruebas:
+                    script=prueba["script"]
+                    urlapk=prueba["url_apk"]
+                # sqs_connection.delete()
+                execute_test(script,urlapk)
 
     except Exception as e:
         print(e)
@@ -36,7 +44,7 @@ def process():
 
 if __name__ == '__main__':
     while True:
-        Thread(target=process).start()
+        process()
         st = str(datetime.datetime.now())
         print(st + ' : alive')
         sleep(Settings.SLEEP_TIME)
